@@ -52,6 +52,8 @@
     "password": "",
     "secret": "",
     "ccxt_config": {
+      "httpsProxy": "http://host.docker.internal:7897",
+      "wsProxy": "http://host.docker.internal:7897",
       "enableRateLimit": true,
       "rateLimit": 60,
       "options": {

@@ -1,0 +1,24 @@
+services:  
+  download-data:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM freqtradeorg/freqtrade:stable  
+        USER root  
+        RUN apt-get update && apt-get install -y git jq && rm -rf /var/lib/apt/lists/*
+        RUN mkdir -p /freqtrade/user_data && chown -R ftuser:ftuser /freqtrade/user_data  
+        USER ftuser  
+    container_name: download-market-data
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./tools:/freqtrade/tools"
+      - "./configs:/freqtrade/configs"
+    environment:
+      - TZ=Asia/Shanghai
+      - GIT_HTTP_PROXY=socks5://host.docker.internal:7897
+      - GIT_HTTPS_PROXY=socks5://host.docker.internal:7897
+      - ALL_PROXY=socks5://host.docker.internal:7897
+    working_dir: /freqtrade
+    entrypoint: []
+    command: bash /freqtrade/tools/download-in-batches.sh
+    # command: webserver
