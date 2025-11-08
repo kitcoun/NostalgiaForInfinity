@@ -9,6 +9,7 @@ services:
         RUN mkdir -p /freqtrade/user_data && chown -R ftuser:ftuser /freqtrade/user_data  
         USER ftuser  
     container_name: download-market-data
+    network_mode: host
     volumes:
       - "./user_data:/freqtrade/user_data"
       - "./tools:/freqtrade/tools"
