@@ -7,6 +7,8 @@ services:
         USER root  
         RUN apt-get update && apt-get install -y git jq && rm -rf /var/lib/apt/lists/*
         RUN mkdir -p /freqtrade/user_data && chown -R ftuser:ftuser /freqtrade/user_data  
+        RUN rm /freqtrade/user_data/data/.git/info/sparse-checkout.lock
+        RUN rm -f /freqtrade/user_data/data/.git/index.lock  
         USER ftuser  
     container_name: download-market-data
     network_mode: host
