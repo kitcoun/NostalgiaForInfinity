@@ -6,9 +6,7 @@ services:
         FROM freqtradeorg/freqtrade:stable  
         USER root  
         RUN apt-get update && apt-get install -y git jq && rm -rf /var/lib/apt/lists/*
-        RUN mkdir -p /freqtrade/user_data && chown -R ftuser:ftuser /freqtrade/user_data  
-        RUN rm /freqtrade/user_data/data/.git/info/sparse-checkout.lock
-        RUN rm -f /freqtrade/user_data/data/.git/index.lock  
+        RUN mkdir -p /freqtrade/user_data && chown -R ftuser:ftuser /freqtrade/user_data
         USER ftuser  
     container_name: download-market-data
     network_mode: host
@@ -25,3 +23,49 @@ services:
     entrypoint: []
     command: bash /freqtrade/tools/download-in-batches.sh
     # command: webserver
+
+  backtesting:
+    image: freqtrade_with_numba
+    build:
+      context: .
+      dockerfile: "./docker/Dockerfile.custom"
+    container_name: ${EXCHANGE:-binance}-${TRADING_MODE:-futures}-backtesting
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./user_data/data:/freqtrade/user_data/data"
+      - "./configs:/freqtrade/configs"
+      - "./${STRATEGY_NAME:-NostalgiaForInfinityX7}.py:/freqtrade/${STRATEGY_NAME:-NostalgiaForInfinityX7}.py"
+    environment:
+      COLUMNS: 240
+    command: >
+      backtesting
+      --datadir /freqtrade/user_data/data/${EXCHANGE:-binance}
+      --strategy-list ${STRATEGY_NAME:-NostalgiaForInfinityX7}
+      --config configs/trading_mode-${TRADING_MODE:-futures}.json
+      --timeframe-detail 1m --cache none --breakdown day
+      --config configs/exampleconfig.json --timerange ${TIMERANGE:-20230101-}
+      --config configs/pairlist-backtest-static-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-usdt.json
+      --config configs/blacklist-${EXCHANGE:-binance}.json
+      --export signals --export-filename user_data/backtest_results/${STRATEGY_NAME:-NostalgiaForInfinityX7}-${STRATEGY_VERSION:-latest}-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-${TIMERANGE:-20230101-}.json
+      --log-file user_data/logs/${STRATEGY_NAME:-NostalgiaForInfinityX7}-${STRATEGY_VERSION:-latest}-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-${TIMERANGE:-20230101-}.log
+
+  nfi-web-test:
+    # image: freqtrade_with_numba
+    # build:
+    #   context: .
+    #   dockerfile: "./docker/Dockerfile.custom"
+    image: freqtradeorg/freqtrade:stable
+    restart: always
+    container_name: nfi-web-test
+    environment:
+      - TZ=Asia/Shanghai
+    ports: ["8999:8080"]
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./user_data/data:/freqtrade/user_data/data"
+      - "./configs:/freqtrade/configs"
+    command: >
+      webserver
+      --config configs/exampleconfig.json
+      --config configs/exampleconfig_secret.json
+      --config configs/pairlist-backtest-static-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-usdt.json

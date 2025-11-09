@@ -39,7 +39,19 @@ if [ ! -d $MAIN_DATA_DIRECTORY ]; then
     # 禁用自动 gc 以避免权限问题    
     git -C $MAIN_DATA_DIRECTORY config gc.auto 0    
     git -C $MAIN_DATA_DIRECTORY sparse-checkout reapply --no-cone    
-fi  
+fi
+
+# 判断第一个文件是否存在并删除
+if [ -f "$MAIN_DATA_DIRECTORY/.git/info/sparse-checkout.lock" ]; then
+    rm "$MAIN_DATA_DIRECTORY/.git/info/sparse-checkout.lock"
+    echo "✅ Delete sparse-checkout.lock"
+fi
+
+# 判断第二个文件是否存在并删除
+if [ -f "$MAIN_DATA_DIRECTORY/.git/index.lock" ]; then
+    rm "$MAIN_DATA_DIRECTORY/.git/index.lock"
+    echo "✅ Delete index.lock"
+fi
     
 # 验证 Git 仓库    
 log_with_timestamp "Verifying Git repository..."    
@@ -47,7 +59,7 @@ git -C $MAIN_DATA_DIRECTORY status > /dev/null 2>&1
 if [ $? -ne 0 ]; then    
     log_with_timestamp "ERROR: Git repository verification failed"    
     exit 1    
-fi    
+fi
     
 # 从配置文件提取交易对列表    
 CONFIG_FILE="configs/pairlist-backtest-static-$EXCHANGE-$TRADING_MODE-usdt.json"    
@@ -82,7 +94,7 @@ while IFS= read -r pair; do
     done      
           
     count=$((count + 1))    
-    if [ $((count % BATCH_SIZE)) -eq 0 ]; then      
+    if [ $((count %BATCH_SIZE)) -eq 0 ]; then      
         log_with_timestamp "Checking out batch $BATCH_NUM..."      
         git -C $MAIN_DATA_DIRECTORY checkout 2>&1 | while IFS= read -r line; do  
             echo "[$(date +"%Y-%m-%d %H:%M:%S")] $line"  
@@ -104,7 +116,7 @@ while IFS= read -r pair; do
 done < ALL_PAIRS.txt      
     
 # 最后一批    
-if [ $((count % BATCH_SIZE)) -ne 0 ]; then      
+if [ $((count %BATCH_SIZE)) -ne 0 ]; then      
     log_with_timestamp "Checking out final batch..."      
     git -C $MAIN_DATA_DIRECTORY checkout 2>&1 | while IFS= read -r line; do  
         echo "[$(date +"%Y-%m-%d %H:%M:%S")] $line"  
