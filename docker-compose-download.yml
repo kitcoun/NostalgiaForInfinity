@@ -16,9 +16,8 @@ services:
       - "./configs:/freqtrade/configs"
     environment:
       - TZ=Asia/Shanghai
-      - GIT_HTTP_PROXY=socks5://host.docker.internal:7897
-      - GIT_HTTPS_PROXY=socks5://host.docker.internal:7897
-      - ALL_PROXY=socks5://host.docker.internal:7897
+      - HTTP_PROXY=socks5://host.docker.internal:7897
+      - HTTPS_PROXY=socks5://host.docker.internal:7897
     working_dir: /freqtrade
     entrypoint: []
     command: bash /freqtrade/tools/download-in-batches.sh
