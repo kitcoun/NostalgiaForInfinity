@@ -19,9 +19,19 @@ services:
       - HTTP_PROXY=socks5://host.docker.internal:7897
       - HTTPS_PROXY=socks5://host.docker.internal:7897
     working_dir: /freqtrade
-    entrypoint: []
-    command: bash /freqtrade/tools/download-in-batches.sh
+    # entrypoint: []
+    # command: bash /freqtrade/tools/download-in-batches.sh
     # command: webserver
+    command: >
+      download-data 
+      --timeframes 1m 5m 15m 1h 4h 
+      --timerange 20230101-20251112
+      --pairs BTC/USDT:USDT ETH/USDT:USDT XRP/USDT:USDT BNB/USDT:USDT SOL/USDT:USDT TRX/USDT:USDT DOGE/USDT:USDT ADA/USDT:USDT HYPE/USDT:USDT LINK/USDT:USDT BCH/USDT:USDT ZEC/USDT:USDT XLM/USDT:USDT XMR/USDT:USDT LTC/USDT:USDT SUI/USDT:USDT AVAX/USDT:USDT HBAR/USDT:USDT 1000SHIB/USDT:USDT TON/USDT:USDT DOT/USDT:USDT ICP/USDT:USDT M/USDT:USDT UNI/USDT:USDT NEAR/USDT:USDT TAO/USDT:USDT WLFI/USDT:USDT AAVE/USDT:USDT
+      --prepend
+      --config configs/trading_mode-${TRADING_MODE:-futures}.json
+      --config configs/exampleconfig.json
+      --config configs/pairlist-backtest-static-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-usdt.json
+      --config configs/blacklist-${EXCHANGE:-binance}.json
 
   backtesting:
     image: freqtrade_with_numba
@@ -33,7 +43,7 @@ services:
       - "./user_data:/freqtrade/user_data"
       - "./user_data/data:/freqtrade/user_data/data"
       - "./configs:/freqtrade/configs"
-      - "./${STRATEGY_NAME:-NostalgiaForInfinityX7}.py:/freqtrade/${STRATEGY_NAME:-NostalgiaForInfinityX7}.py"
+      - "./${STRATEGY_NAME:-NostalgiaForInfinityX7}.py:/freqtrade/user_data/strategies/${STRATEGY_NAME:-NostalgiaForInfinityX7}.py"
     environment:
       COLUMNS: 240
     command: >
@@ -41,11 +51,15 @@ services:
       --datadir /freqtrade/user_data/data/${EXCHANGE:-binance}
       --strategy-list ${STRATEGY_NAME:-NostalgiaForInfinityX7}
       --config configs/trading_mode-${TRADING_MODE:-futures}.json
-      --timeframe-detail 1m --cache none --breakdown day
-      --config configs/exampleconfig.json --timerange ${TIMERANGE:-20230101-}
+      --timeframe-detail 1m 
+      --cache none 
+      --breakdown day
+      --config configs/exampleconfig.json 
+      --timerange ${TIMERANGE:-20230101-}
       --config configs/pairlist-backtest-static-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-usdt.json
       --config configs/blacklist-${EXCHANGE:-binance}.json
-      --export signals --export-filename user_data/backtest_results/${STRATEGY_NAME:-NostalgiaForInfinityX7}-${STRATEGY_VERSION:-latest}-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-${TIMERANGE:-20230101-}.json
+      --export signals 
+      --export-filename user_data/backtest_results/${STRATEGY_NAME:-NostalgiaForInfinityX7}-${STRATEGY_VERSION:-latest}-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-${TIMERANGE:-20230101-}.json
       --log-file user_data/logs/${STRATEGY_NAME:-NostalgiaForInfinityX7}-${STRATEGY_VERSION:-latest}-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-${TIMERANGE:-20230101-}.log
 
   nfi-web-test:
@@ -63,8 +77,10 @@ services:
       - "./user_data:/freqtrade/user_data"
       - "./user_data/data:/freqtrade/user_data/data"
       - "./configs:/freqtrade/configs"
+      - "./${STRATEGY_NAME:-NostalgiaForInfinityX7}.py:/freqtrade/user_data/strategies/${STRATEGY_NAME:-NostalgiaForInfinityX7}.py"
     command: >
       webserver
+      --config configs/trading_mode-${TRADING_MODE:-futures}.json
       --config configs/exampleconfig.json
-      --config configs/exampleconfig_secret.json
       --config configs/pairlist-backtest-static-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-usdt.json
+      --config configs/blacklist-${EXCHANGE:-binance}.json
