@@ -3,6 +3,8 @@
     "name": "binance",
     "ccxt_config": {
       "enableRateLimit": true,
+      "httpsProxy": "http://host.docker.internal:7897",
+      "wsProxy": "http://host.docker.internal:7897",
       "rateLimit": 200
     },
     "ccxt_async_config": {
