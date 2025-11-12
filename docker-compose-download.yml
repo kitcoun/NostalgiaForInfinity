@@ -81,6 +81,6 @@ services:
     command: >
       webserver
       --config configs/trading_mode-${TRADING_MODE:-futures}.json
-      --config configs/exampleconfig.json
+      --config configs/exampleconfig_secret.json
       --config configs/pairlist-backtest-static-${EXCHANGE:-binance}-${TRADING_MODE:-futures}-usdt.json
       --config configs/blacklist-${EXCHANGE:-binance}.json
