@@ -35,6 +35,7 @@ services:
     command: >
       trade
       --config configs/trading_mode-futures.json
+      --config configs/pairlist-backtest-static.json
       --config configs/blacklist-binance.json
       --config configs/exampleconfig.json
       --config configs/exampleconfig_secret.json
